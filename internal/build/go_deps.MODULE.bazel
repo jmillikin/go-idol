@@ -1,0 +1,73 @@
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+
+GO_PROXY_ZIP = "https://proxy.golang.org/{}/@v/{}.zip"
+
+GO_DEPS = [
+    {
+        "importpath": "github.com/inconshreveable/mousetrap",
+        "version": "v1.1.0",
+        "go_hash": "h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=",
+        "sha256": "526674de624d7db108cfe7653ef110ccdfd97bc85026254224815567928ed243",
+        "indirect": True,
+    },
+    {
+        "importpath": "github.com/pmezard/go-difflib",
+        "version": "v1.0.0",
+        "go_hash": "h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=",
+        "sha256": "de04cecc1a4b8d53e4357051026794bcbc54f2e6a260cfac508ce69d5d6457a0",
+    },
+    {
+        "importpath": "github.com/spf13/cobra",
+        "version": "v1.8.1",
+        "go_hash": "h1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=",
+        "sha256": "bf27a276f87257c93bc057309df30265a19beefc3d5fc887cbd8fc99ad35466a",
+    },
+    {
+        "importpath": "github.com/spf13/pflag",
+        "version": "v1.0.5",
+        "go_hash": "h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=",
+        "sha256": "fc6e704f2f6a84ddcdce6de0404e5340fa20c8676181bf5d381b17888107ba84",
+    },
+    {
+        "importpath": "github.com/tetratelabs/wazero",
+        "version": "v1.8.0",
+        "go_hash": "h1:iEKu0d4c2Pd+QSRieYbnQC9yiFlMS9D+Jr0LsRmcF4g=",
+        "sha256": "0086e2d17eb1a5b8d96c6e0fbe1cae403556c4149b3799236f32243c566fe75c",
+    },
+]
+
+GO_DEP_URLS = dict([
+    (
+        dep["importpath"],
+        [GO_PROXY_ZIP.format(
+            dep["importpath"],
+            dep["version"],
+        )],
+    )
+    for dep in GO_DEPS
+])
+
+[go_deps.module(
+    indirect = dep.get("indirect", False),
+    path = dep["importpath"],
+    sum = dep["go_hash"],
+    version = dep["version"],
+) for dep in GO_DEPS]
+
+[go_deps.archive_override(
+    path = dep["importpath"],
+    sha256 = dep["sha256"],
+    strip_prefix = "{}@{}".format(
+        dep["importpath"],
+        dep["version"],
+    ),
+    urls = GO_DEP_URLS[dep["importpath"]],
+) for dep in GO_DEPS]
+
+use_repo(
+    go_deps,
+    "com_github_pmezard_go_difflib",
+    "com_github_spf13_cobra",
+    "com_github_spf13_pflag",
+    "com_github_tetratelabs_wazero",
+)

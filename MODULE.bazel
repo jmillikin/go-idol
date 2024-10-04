@@ -1,0 +1,25 @@
+module(
+    name = "go-idol",
+)
+
+bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "gazelle", version = "0.39.1")
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.23.1")
+
+git_repository = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:git.bzl",
+    "git_repository",
+)
+
+git_repository(
+    name = "idol",
+    commit = "183f6aeac40dc29f4d7a79105fcc0fa7ff44c7b8",
+    dev_dependency = True,
+    remote = "https://github.com/jmillikin/idol",
+)
+
+include("//internal/build:go_deps.MODULE.bazel")
+
+include("//internal/build:tinygo.MODULE.bazel")
