@@ -1,0 +1,65 @@
+= go-idol
+:url-idol: https://github.com/jmillikin/idol
+:url-idl: https://en.wikipedia.org/wiki/Interface_description_language
+
+image:https://img.shields.io/badge/License-0BSD-blue.svg[link="https://spdx.org/licenses/0BSD.html"]
+
+In-progress reference implementation of {url-idol}[Idol], a language- and platform-independent {url-idl}[IDL] and encoding for zero-copy serialization of structured data.
+
+== Building
+:url-bazel: https://bazel.build/
+
+The primary build system used for development of go-idol is {url-bazel}[Bazel]. Version 7.x or greater is recommended.
+
+----
+# Build the `idol` command-line tool.
+bazel build //bin/idol
+
+# Build the `idol-wasm-go.wasm` codegen plugin
+bazel build //bin/idol-codegen-go:idol-codegen-go_wasm
+
+# Build the Go codegen plugin as a standalone binary
+bazel build //bin/idol-codegen-go
+
+# Run tests against the revision of https://github.com/jmillikin/idol
+# depended on in `MODULE.bazel`.
+bazel test //...
+----
+
+The `idol` command-line tool and `idol-codegen-go` standalone code generator binary can also be built with `go build`.
+
+----
+cd bin/idol
+go build
+cd ../idol-codegen-go
+go build
+----
+
+== Current status
+
+The code in this repository is very rough, and is under active development. The original reference implementation of Idol was written in Rust, but had to be hurriedly re-written in Go to ensure long-term API stability.
+
+Things that are expected to work:
+
+* Parsing and compilation of most valid Idol schemas, using the `idol compile` command.
+* Detection of most schema errors -- note that some known-invalid schema conditions are not yet detected, such as recursive `struct` declarations.
+* Go code generation for `enum` and `message` declarations, using the `idol codegen` command and the `idol-codegen-go.wasm` codegen plugin.
+** Enough to generate the `schema_idl.go` and `codegen_idl.go` files in this repository, but not much more.
+* Running tests against the https://github.com/jmillikin/idol `testdata/` directory.
+* Encoding messages to the text encoding.
+
+Things that don't yet work:
+
+* Go codegen of `const`, `struct`, and `union` declarations.
+** The support library is missing the code for these types.
+* Validation of decoded message field content, such as checking that `text` fields contain valid UTF-8.
+* Compilation of schemas with multiple levels of `const` alias-assignment.
+* Compilation of schemas with the `bytes` type (alias of `u8[]`)
+* Encoding and decoding of messages containing ``handle`` fields.
+* Parsing the text encoding.
+* The `idol format` command.
+
+Things that kind of work but not well:
+
+* The top-level API in the Go support library was translated more-or-less directly from Rust, and many of the Rust idioms did not make the transition gracefully.
+* The Go import paths are rooted at `go.idol-lang.org`, but that domain hasn't yet been configured to host Go packages, so `go install` and other built-in Go tooling works poorly or not at all.
